@@ -36,7 +36,7 @@ class PriceSetter2:
             self.price =  self.expectation - beta_quantile * self.std_beta
         else:
             # When alpha == beta, the distribution is symmetric, so use the mean
-            self.price =  self.expected_value - 0.1
+            self.price =  self.expectation - 0.1
 
       
     def set_price(self, t):

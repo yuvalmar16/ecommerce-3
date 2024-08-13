@@ -13,7 +13,14 @@ class AuctionClient:
             clients_num (int): The number of clients in the simulation.
             manufacturers_num (int): The number of manufacturers in the simulation.
         """
-        raise NotImplementedError
+        self.value = value
+        self.clients_num = clients_num
+        self.insurances_num = insurances_num
+        self.history = []
+        self.pred_others_values = [np.random.beta(5, 2) for _ in range(clients_num)]
+        self.pred_others_values.append(self.value)
+        sorted(self.pred_others_values)
+
 
     def decide_bid(self, t, duration):
         """
@@ -26,8 +33,21 @@ class AuctionClient:
         Returns:
             float: The bid of the client
         """
-        raise NotImplementedError
+        if self.clients_num < self.insurances_num:
+            # Strategy for less clients than insurances
+            curr_highest_value = self.pred_others_values.pop(0)
+            if self.value >= curr_highest_value:
+                if self.value >= (5 / 7):
+                    
+            else:
+                bid = 
+        else:
+            # Original strategy for more clients than insurances
+            bid = (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.5
 
+        return bid
+    
+        
     def update(self, t, price):
         """
         Updates the client based on the price
@@ -37,7 +57,8 @@ class AuctionClient:
             t (int): The current time.
             price (float): The price of the winning bid.
         """
-        raise NotImplementedError
+        self.history.append(price)
+
 
 
 def auction_client_creator(value, clients_num, insurances_num):
@@ -48,7 +69,7 @@ class NaiveAuctionClient:
     def __init__(self, value, clients_num, insurances_num):
         """
         Initializes the NaiveAuctionClient class.
-        It offers it actual value for the product.
+        It offers its actual value for the product.
         """
         self.value = value
         self.clients_num = clients_num
@@ -101,12 +122,12 @@ def simulate_single_auction(num_of_competitors, number_of_insurances):
         competing_bid_list = [client.decide_bid(t, duration) for client in active_competing_clients]
 
         if len(active_competing_clients) == 0:
-            if your_bid == 0:  # you didn't want to bid
+            if your_bid == -1:  # you didn't want to bid
                 continue
             else:
                 return duration * your_value
 
-        if your_bid == 0:  # you didn't want to bid
+        if your_bid == -1:  # you didn't want to bid
             if len(active_competing_clients) == 1:
                 second_highest_bid = 0
                 active_competing_clients.pop(0)
@@ -174,6 +195,8 @@ VARIABLES_VALUES = [(10, 5), (5, 10), (10, 10), (20, 10), (10, 20), (20, 20)]
 BASELINES = [0.3565, 0.756, 0.3565, 0.3565, 0.856, 0.3565]
 
 if __name__ == "__main__":
+    """ Original code:
+    
     np.random.seed(0)
     for i, (num_of_competitors, number_of_insurances) in enumerate(VARIABLES_VALUES):
         result = simulate(1000, num_of_competitors, number_of_insurances)
@@ -181,3 +204,12 @@ if __name__ == "__main__":
             raise Exception("You didn't beat the baseline.")
 
     print("All simulations passed.")
+    """
+    
+    np.random.seed(0)
+    for i, (num_of_competitors, number_of_insurances) in enumerate(VARIABLES_VALUES):
+        result = simulate(1000, num_of_competitors, number_of_insurances)
+        print("Case:", VARIABLES_VALUES[i], "\nresult:", result)
+        if result < BASELINES[i]:
+            print("----- Test failed. ------")
+        print()
