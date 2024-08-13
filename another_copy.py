@@ -37,10 +37,12 @@ class AuctionClient:
             # Strategy for less clients than insurances
             curr_highest_value = self.pred_others_values.pop(0)
             if self.value >= curr_highest_value:
-                if self.value >= (5 / 7):
-                    
+                if (self.value >= (5 / 7)) and (self.value >= (5 / 7)):
+                    bid = -1
+                elif (self.value >= (5 / 7)) and (self.value < (5 / 7)):
+                    pass
             else:
-                bid = 
+                pass
         else:
             # Original strategy for more clients than insurances
             bid = (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.5
