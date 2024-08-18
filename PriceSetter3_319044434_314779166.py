@@ -14,8 +14,8 @@ class PriceSetter3:
         Args:
             rounds (int): the number of rounds to simulate
         """
-        self.alpha = len(ALPHA_VALUES) / 2
-        self.beta = len(BETA_VALUES) / 2
+        self.alpha = sum(a for a in ALPHA_VALUES) / len(ALPHA_VALUES)
+        self.beta = sum(b for b in BETA_VALUES) / len(BETA_VALUES)
         self.expectation = self.alpha / (self.alpha + self.beta)
         
         self.price =  self.expectation - 0.1

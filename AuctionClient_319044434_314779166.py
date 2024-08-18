@@ -1,3 +1,4 @@
+
 import copy
 
 import numpy as np
@@ -16,38 +17,9 @@ class AuctionClient:
         self.value = value
         self.clients_num = clients_num
         self.insurances_num = insurances_num
-        self.history = []
-        self.wins = 0
-
-
-    # def decide_bid(self, t, duration):
-    #     """
-    #     Decides the bid of the client at time t given the duration of the insurance.
-
-    #     Args:
-    #         t (int): The current time.
-    #         duration (int): The duration of the insurance.
-
-    #     Returns:
-    #         float: The bid of the client
-    #     """
-    #     # remaining_auctions = self.insurances_num - t
-    #     # if self.clients_num < self.insurances_num:
-    #     #     bid = (self.value ) * (1 - np.exp(- t / self.insurances_num))*(1-self.wins/self.clients_num)
-
-    #     remaining_auctions = self.insurances_num - t
-    #     win_rate = self.wins / (t + 1) if t > 0 else 0
-
-    #     if self.clients_num < self.insurances_num:
-    #     # Consider both the value, duration, and a factor based on the number of wins
-    #          bid = (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) * (1 - win_rate)
-
-    #     else:
-    #         bid = (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.5
-
-    #      # Ensure bid is non-negative
-    #     return max(bid, 0.1 * self.value)
-
+        self.alpha = 5
+        self.beta = 2
+        
 
     def decide_bid(self, t, duration):
         """
@@ -60,32 +32,22 @@ class AuctionClient:
         Returns:
             float: The bid of the client
         """
-        remaining_auctions = self.insurances_num - t
-        win_rate = self.wins / (t + 1) if t > 0 else 0
-
         if self.clients_num < self.insurances_num:
-            # Increase bid aggressiveness as the number of remaining auctions decreases
-            if remaining_auctions <= self.insurances_num / 2:
-                bid = (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) * (1.2 - win_rate) + 0.1
-            else:
-                # Use a more conservative approach initially
-                bid = (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) * (0.9 - win_rate) + 0.1
-
-#option 2
-            # remaining_auctions = self.insurances_num - t
-            # if remaining_auctions > self.insurances_num / 2:
-            #     bid = 0.2 * (self.value * duration)  # Bid low early on
-            # else:
-            #     # Gradually increase bid as auctions progress, up to 2x the value
-            #     bid = (0.2 + 1.8 * (1 - remaining_auctions / (self.insurances_num / 2))) * (self.value * duration) * (1 + (1 - win_rate))
+            if t < (self.clients_num - 1):  # if I'm not the last client, don't bid
+                return -1
+            if (t < (self.insurances_num - 1)) and (duration < (6/7)):
+                return -1
+            return self.value
         
-        
-        else:
-            bid = (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.5
-
-        # Ensure bid is non-negative and above a certain threshold to remain competitive
-        return max(bid, 0.1 * self.value)
-
+        num_clients = self.clients_num - 1
+        # Making a list of the Order statistics expectations as they give an estimate of the order of values of the bidders. 
+        order_statistics_expectation = sorted([(self.alpha + k - 1) / (self.alpha + 1 + self.beta + num_clients) for k in range(num_clients)], reverse=True)  # Calculating the expected order statistics of everyon else
+        if order_statistics_expectation[t] > self.value:  # If my value is lower than the expected value at round t
+            return -1
+        if (t < (self.insurances_num - 1)) and (duration < (6/7)):  # When I'm the highest value, try to get a good deal
+            return -1
+        return (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.7
+            
 
     def update(self, t, price):
         """
@@ -96,9 +58,6 @@ class AuctionClient:
             t (int): The current time.
             price (float): The price of the winning bid.
         """
-        self.history.append(price)
-        if price <= self.value:
-            self.wins += 1  # Track wins to adjust future bids
 
 
 def auction_client_creator(value, clients_num, insurances_num):
