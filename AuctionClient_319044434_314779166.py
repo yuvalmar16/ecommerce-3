@@ -33,6 +33,9 @@ class AuctionClient:
         Returns:
             float: The bid of the client
         """
+        if t == 0:
+            return 0.1 * self.value
+        
         if self.is_enemy_naive:
             if self.clients_num < self.insurances_num:
                 if t < (self.clients_num - 1):  # if I'm not the last client, don't bid
@@ -50,7 +53,7 @@ class AuctionClient:
                 return -1
             return (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.7
         
-        return self.value * duration
+        return min(self.value * duration, 1)
             
 
     def update(self, t, price):
