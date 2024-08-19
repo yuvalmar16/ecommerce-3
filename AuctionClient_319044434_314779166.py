@@ -19,6 +19,7 @@ class AuctionClient:
         self.insurances_num = insurances_num
         self.alpha = 5
         self.beta = 2
+        self.is_enemy_naive = True
         
 
     def decide_bid(self, t, duration):
@@ -32,21 +33,24 @@ class AuctionClient:
         Returns:
             float: The bid of the client
         """
-        if self.clients_num < self.insurances_num:
-            if t < (self.clients_num - 1):  # if I'm not the last client, don't bid
+        if self.is_enemy_naive:
+            if self.clients_num < self.insurances_num:
+                if t < (self.clients_num - 1):  # if I'm not the last client, don't bid
+                    return -1
+                if (t < (self.insurances_num - 1)) and (duration < (6/7)):
+                    return -1
+                return self.value
+            
+            num_clients = self.clients_num - 1
+            # Making a list of the order statistics expectations as they give an estimate of the order of values of the bidders. 
+            order_statistics_expectation = sorted([(self.alpha + k - 1) / (self.alpha + 1 + self.beta + num_clients) for k in range(num_clients)], reverse=True)  # Calculating the expected order statistics of everyon else
+            if order_statistics_expectation[t] > self.value:  # If my value is lower than the expected value at round t
                 return -1
-            if (t < (self.insurances_num - 1)) and (duration < (6/7)):
+            if (t < (self.insurances_num - 1)) and (duration < (6/7)):  # When I'm the highest value, try to get a good deal
                 return -1
-            return self.value
+            return (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.7
         
-        num_clients = self.clients_num - 1
-        # Making a list of the Order statistics expectations as they give an estimate of the order of values of the bidders. 
-        order_statistics_expectation = sorted([(self.alpha + k - 1) / (self.alpha + 1 + self.beta + num_clients) for k in range(num_clients)], reverse=True)  # Calculating the expected order statistics of everyon else
-        if order_statistics_expectation[t] > self.value:  # If my value is lower than the expected value at round t
-            return -1
-        if (t < (self.insurances_num - 1)) and (duration < (6/7)):  # When I'm the highest value, try to get a good deal
-            return -1
-        return (self.value * duration) * (1 - np.exp(- t / self.insurances_num)) - 0.7
+        return self.value * duration
             
 
     def update(self, t, price):
@@ -58,6 +62,8 @@ class AuctionClient:
             t (int): The current time.
             price (float): The price of the winning bid.
         """
+        if (t == 0) and (price < 0.1):
+            self.is_enemy_naive = False
 
 
 def auction_client_creator(value, clients_num, insurances_num):
