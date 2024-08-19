@@ -98,4 +98,4 @@ def simulate(simulations, rounds):
 
 if __name__ == "__main__":
     np.random.seed(0)
-    print(simulate(3000, 1000))
+    print(simulate(1000, 1000))

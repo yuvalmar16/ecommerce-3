@@ -24,11 +24,10 @@ class PriceSetter2:
         # Calculate the beta quantile for price adjustment
         
         if alpha - beta > 2:  # alpha = 8
-            beta_quantile = beta_dist.ppf(1, alpha, beta)   # 40th percentile for a lower price
-            self.price =  self.expectation - 1.2*beta_quantile * self.std_beta
+            self.price =  self.expectation - 1.2*self.std_beta
 
         elif alpha > beta:  # alpha = 4
-            beta_quantile = beta_dist.ppf(0.5, alpha, beta)  # 40th percentile for a higher price
+            beta_quantile = beta_dist.ppf(0.5, alpha, beta)  # 50th percentile for a lower price
             self.price =  self.expectation - beta_quantile * self.std_beta
             
         elif alpha < beta:

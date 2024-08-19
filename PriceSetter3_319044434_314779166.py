@@ -17,8 +17,6 @@ class PriceSetter3:
         self.alpha = sum(a for a in ALPHA_VALUES) / len(ALPHA_VALUES)
         self.beta = sum(b for b in BETA_VALUES) / len(BETA_VALUES)
         self.expectation = self.alpha / (self.alpha + self.beta)
-        
-        self.price =  self.expectation - 0.1
     
 
     def set_price(self, t):
@@ -31,7 +29,12 @@ class PriceSetter3:
         Returns:
             float: the price at time t
         """
-        return self.price
+        if t == 0:
+            price = self.expectation-0.144
+        else:
+            price = self.expectation - 0.285
+        return price
+
     
 
     def update(self, t, outcome):
@@ -42,7 +45,11 @@ class PriceSetter3:
             t (int): the time period
             outcome (int): the outcome of the previous period - true if the product was sold, false otherwise
         """
-        
+        if outcome:
+            self.alpha += 5 # adding to the value of alpha
+        else:
+            self.beta += 6.7 #adding the the value of beta
+        self.expectation = self.alpha / (self.alpha + self.beta)
 
 
 def simulate(simulations, rounds):
